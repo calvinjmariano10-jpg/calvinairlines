@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Calvin Airlines Inc. flight ticketing system prototype: choose a flight, pick seats, calculate the cost and get a ticket confirmation.">
+  <title>Calvin Airlines Inc. | Flight Ticketing System</title>
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <!-- ===== Site header and navigation ===== -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="#home" aria-label="Calvin Airlines Inc. home">
+        <img src="assets/logo.svg" alt="" width="40" height="40">
+        <span class="brand-text">Calvin Airlines <small>Inc.</small></span>
+      </a>
+      <button class="nav-toggle" id="navToggle" type="button" aria-expanded="false" aria-controls="siteNav">
+        <span class="nav-toggle-bars" aria-hidden="true"></span>
+        <span class="visually-hidden">Menu</span>
+      </button>
+      <nav class="site-nav" id="siteNav" aria-label="Main navigation">
+        <ul>
+          <li><a href="#home" data-nav="home">Home</a></li>
+          <li><a href="#flights" data-nav="flights">Flights</a></li>
+          <li><a href="#book" data-nav="book">Book a Ticket</a></li>
+          <li><a href="#records" data-nav="records">My Bookings</a></li>
+          <li><a href="#about" data-nav="about">About / Help</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <div class="demo-banner" role="note">
+    <div class="container">
+      <strong>Prototype notice:</strong> payments, seat availability and e-mail/SMS notifications are simulated.
+      Bookings are saved only in this browser. All names and details are fictional.
+    </div>
+  </div>
+
+  <main id="main">
+    <noscript>
+      <div class="container"><p class="alert alert--error">This system needs JavaScript. Please enable JavaScript in your browser and reload the page.</p></div>
+    </noscript>
+
+    <!-- ===== HOME / DASHBOARD ===== -->
+    <section class="view" id="view-home" data-view="home" aria-labelledby="homeHeading">
+      <div class="hero">
+        <div class="container hero-inner">
+          <div class="hero-copy">
+            <p class="eyebrow">Flight Ticketing System</p>
+            <h1 id="homeHeading" tabindex="-1">Calvin Airlines Inc.</h1>
+            <p class="lead">Book your flight in four easy steps: choose a flight, pick your seats, see the cost, and get your ticket confirmation. Designed for travelers who want a quick and clear booking experience.</p>
+            <div class="btn-row">
+              <a class="btn btn--accent" href="#flights">Browse flights</a>
+              <a class="btn btn--light" href="#book">Book a ticket</a>
+              <a class="btn btn--ghost" href="#records">Manage my bookings</a>
+            </div>
+          </div>
+          <svg class="hero-art" viewBox="0 0 240 160" aria-hidden="true" focusable="false">
+            <circle cx="120" cy="80" r="62" fill="rgba(255,255,255,.08)"/>
+            <path d="M20 110c40-34 90-48 150-40" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="2" stroke-dasharray="5 7"/>
+            <path d="M54 92 196 38c5-2 9 3 5 7l-38 33 5 40c.3 3-3 5-5.500 3L136 98l-18 14 1 22c.1 3-3 4.500-5 2.500L96 118l-34 3c-4 .3-5-4.500-1.500-6Z" fill="#fff"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="container">
+        <h2 class="section-title">Your dashboard</h2>
+        <div class="stats" role="list">
+          <div class="stat" role="listitem"><span class="stat-value" id="statTotal">0</span><span class="stat-label">Active bookings</span></div>
+          <div class="stat" role="listitem"><span class="stat-value" id="statUpcoming">0</span><span class="stat-label">Upcoming trips</span></div>
+          <div class="stat" role="listitem"><span class="stat-value" id="statRevenue">₱0.00</span><span class="stat-label">Total ticket value (simulated)</span></div>
+          <div class="stat" role="listitem"><span class="stat-value" id="statCancelled">0</span><span class="stat-label">Cancelled bookings</span></div>
+        </div>
+
+        <h2 class="section-title">How it works</h2>
+        <ol class="steps">
+          <li><strong>Select a flight</strong><span>Filter by route and date.</span></li>
+          <li><strong>Choose seats</strong><span>Pick from the interactive seat map.</span></li>
+          <li><strong>Enter details</strong><span>Fill in passenger and contact information.</span></li>
+          <li><strong>Get your ticket</strong><span>Receive a reference number and e-ticket.</span></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ===== FLIGHTS / LISTINGS ===== -->
+    <section class="view" id="view-flights" data-view="flights" aria-labelledby="flightsHeading" hidden>
+      <div class="container">
+        <h1 id="flightsHeading" tabindex="-1">Available flights</h1>
+        <p class="muted">Seat counts are based on the bookings saved in this browser.</p>
+
+        <form class="filter-bar" id="flightFilterForm" novalidate>
+          <div class="field">
+            <label for="filterDate">Travel date</label>
+            <input type="date" id="filterDate" name="filterDate">
+          </div>
+          <div class="field">
+            <label for="filterFrom">From</label>
+            <select id="filterFrom" name="filterFrom"><option value="">Any origin</option></select>
+          </div>
+          <div class="field">
+            <label for="filterTo">To</label>
+            <select id="filterTo" name="filterTo"><option value="">Any destination</option></select>
+          </div>
+          <div class="field">
+            <label for="filterSort">Sort by</label>
+            <select id="filterSort" name="filterSort">
+              <option value="time">Departure time</option>
+              <option value="price">Lowest price</option>
+              <option value="code">Flight number</option>
+            </select>
+          </div>
+          <div class="field filter-reset">
+            <button class="btn btn--outline" type="button" id="resetFlightFilters">Reset filters</button>
+          </div>
+          <p class="field-error filter-error" id="filterDate-error" aria-live="polite"></p>
+        </form>
+
+        <p class="results-count" id="flightsCount" aria-live="polite"></p>
+        <div class="flight-list" id="flightList"></div>
+        <div class="empty-state" id="flightsEmpty" hidden>
+          <h2>No flights found</h2>
+          <p>No flights match your filters. Try a different route or reset the filters.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== TRANSACTION FORM ===== -->
+    <section class="view" id="view-book" data-view="book" aria-labelledby="bookHeading" hidden>
+      <div class="container">
+        <h1 id="bookHeading" tabindex="-1">Book a ticket</h1>
+        <p class="muted">Fields marked <span class="req" aria-hidden="true">*</span><span class="visually-hidden">with an asterisk</span> are required. Payment is simulated; no real charges are made.</p>
+
+        <form id="bookingForm" class="booking-layout" novalidate>
+          <div class="booking-main">
+
+            <fieldset class="card">
+              <legend>1. Trip details</legend>
+              <div class="form-grid">
+                <div class="field field--wide">
+                  <label for="flightSelect">Flight <span class="req" aria-hidden="true">*</span></label>
+                  <select id="flightSelect" name="flightSelect" required aria-describedby="flightSelect-error">
+                    <option value="">Select a flight</option>
+                  </select>
+                  <p class="field-error" id="flightSelect-error" aria-live="polite"></p>
+                </div>
+                <div class="field">
+                  <label for="travelDate">Travel date <span class="req" aria-hidden="true">*</span></label>
+                  <input type="date" id="travelDate" name="travelDate" required aria-describedby="travelDate-error">
+                  <p class="field-error" id="travelDate-error" aria-live="polite"></p>
+                </div>
+                <div class="field">
+                  <label for="paxCount">Number of passengers (1–6) <span class="req" aria-hidden="true">*</span></label>
+                  <input type="number" id="paxCount" name="paxCount" min="1" max="6" step="1" value="1" inputmode="numeric" required aria-describedby="paxCount-error">
+                  <p class="field-error" id="paxCount-error" aria-live="polite"></p>
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset class="card" id="seatFieldset" tabindex="-1">
+              <legend>2. Choose your seats</legend>
+              <p class="muted" id="seatHint">Select a flight and travel date to see the seat map.</p>
+              <ul class="seat-legend" aria-label="Seat map legend">
+                <li><span class="seat-swatch seat-swatch--economy"></span> Economy</li>
+                <li><span class="seat-swatch seat-swatch--business"></span> Business (2× fare)</li>
+                <li><span class="seat-swatch seat-swatch--selected"></span> Selected</li>
+                <li><span class="seat-swatch seat-swatch--reserved"></span> Reserved</li>
+              </ul>
+              <div class="seat-map" id="seatMap"></div>
+              <p class="field-error" id="seatError" aria-live="polite"></p>
+            </fieldset>
+
+            <fieldset class="card">
+              <legend>3. Passenger and contact details</legend>
+              <div class="form-grid">
+                <div class="field">
+                  <label for="contactName">Contact person <span class="req" aria-hidden="true">*</span></label>
+                  <input type="text" id="contactName" name="contactName" maxlength="60" autocomplete="name" required aria-describedby="contactName-error">
+                  <p class="field-error" id="contactName-error" aria-live="polite"></p>
+                </div>
+                <div class="field">
+                  <label for="contactEmail">Email address <span class="req" aria-hidden="true">*</span></label>
+                  <input type="email" id="contactEmail" name="contactEmail" maxlength="80" autocomplete="email" required aria-describedby="contactEmail-error">
+                  <p class="field-error" id="contactEmail-error" aria-live="polite"></p>
+                </div>
+                <div class="field">
+                  <label for="contactPhone">Mobile number <span class="req" aria-hidden="true">*</span></label>
+                  <input type="tel" id="contactPhone" name="contactPhone" maxlength="20" autocomplete="tel" placeholder="0917 123 4567" required aria-describedby="contactPhone-help contactPhone-error">
+                  <p class="help" id="contactPhone-help">Format: 09XX XXX XXXX or +63 9XX XXX XXXX</p>
+                  <p class="field-error" id="contactPhone-error" aria-live="polite"></p>
+                </div>
+              </div>
+              <div class="pax-fields" id="paxFields"></div>
+            </fieldset>
+
+            <fieldset class="card">
+              <legend>4. Payment (simulated)</legend>
+              <div class="form-grid">
+                <div class="field field--wide">
+                  <label for="paymentMethod">Payment method <span class="req" aria-hidden="true">*</span></label>
+                  <select id="paymentMethod" name="paymentMethod" required aria-describedby="paymentMethod-error">
+                    <option value="">Select a payment method</option>
+                  </select>
+                  <p class="field-error" id="paymentMethod-error" aria-live="polite"></p>
+                </div>
+              </div>
+              <div class="field field--check">
+                <input type="checkbox" id="agreeDemo" name="agreeDemo" required aria-describedby="agreeDemo-error">
+                <label for="agreeDemo">I understand this is a demonstration. No real payment is made and the ticket is not valid for travel. <span class="req" aria-hidden="true">*</span></label>
+                <p class="field-error" id="agreeDemo-error" aria-live="polite"></p>
+              </div>
+            </fieldset>
+          </div>
+
+          <aside class="booking-summary card" aria-labelledby="summaryHeading">
+            <h2 id="summaryHeading">Booking summary</h2>
+            <dl class="summary-list">
+              <div><dt>Flight</dt><dd id="sumFlight">Not selected</dd></div>
+              <div><dt>Date</dt><dd id="sumDate">Not selected</dd></div>
+              <div><dt>Seats</dt><dd id="sumSeats">None selected</dd></div>
+            </dl>
+            <p class="seat-counter" id="seatCounter" aria-live="polite"></p>
+            <div id="sumLines" class="summary-lines"></div>
+            <dl class="summary-totals">
+              <div><dt>Fare subtotal</dt><dd id="sumFare">₱0.00</dd></div>
+              <div><dt>VAT (12%)</dt><dd id="sumVat">₱0.00</dd></div>
+              <div><dt>Booking fee</dt><dd id="sumFee">₱0.00</dd></div>
+              <div class="grand"><dt>Total</dt><dd id="sumTotal">₱0.00</dd></div>
+            </dl>
+            <div class="btn-stack">
+              <button class="btn btn--primary btn--block" type="submit" id="submitBooking">Confirm booking</button>
+              <button class="btn btn--outline btn--block" type="button" id="resetBooking">Clear form</button>
+            </div>
+          </aside>
+        </form>
+      </div>
+    </section>
+
+    <!-- ===== CONFIRMATION / SUMMARY ===== -->
+    <section class="view" id="view-confirmation" data-view="confirmation" aria-labelledby="confirmationHeading" hidden>
+      <div class="container">
+        <h1 id="confirmationHeading" tabindex="-1">Booking confirmation</h1>
+        <div id="ticketView"></div>
+      </div>
+    </section>
+
+    <!-- ===== RECORDS MANAGEMENT ===== -->
+    <section class="view" id="view-records" data-view="records" aria-labelledby="recordsHeading" hidden>
+      <div class="container">
+        <h1 id="recordsHeading" tabindex="-1">My bookings</h1>
+        <p class="muted">View, update, search, cancel or delete the tickets saved in this browser.</p>
+
+        <div class="filter-bar" role="search" aria-label="Search and filter bookings">
+          <div class="field field--grow">
+            <label for="recordsSearch">Search</label>
+            <input type="search" id="recordsSearch" placeholder="Reference, passenger, flight, city or seat" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="recordsStatus">Status</label>
+            <select id="recordsStatus">
+              <option value="">All statuses</option>
+              <option>Confirmed</option>
+              <option>Checked-In</option>
+              <option>Completed</option>
+              <option>Cancelled</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="recordsDate">Travel date</label>
+            <input type="date" id="recordsDate">
+          </div>
+          <div class="field filter-reset">
+            <button class="btn btn--outline" type="button" id="recordsReset">Reset filters</button>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <p class="results-count" id="recordsCount" aria-live="polite"></p>
+          <div class="btn-row btn-row--tight">
+            <button class="btn btn--outline btn--sm" type="button" id="btnSample">Load sample data</button>
+            <button class="btn btn--outline btn--sm" type="button" id="btnExport">Export JSON</button>
+            <button class="btn btn--outline btn--sm" type="button" id="btnImport">Import JSON</button>
+            <button class="btn btn--danger-outline btn--sm" type="button" id="btnClearAll">Delete all</button>
+            <input type="file" id="importFile" accept="application/json,.json" hidden>
+          </div>
+        </div>
+
+        <div class="table-wrap" id="recordsTableWrap">
+          <table class="records-table">
+            <caption class="visually-hidden">Saved flight bookings</caption>
+            <thead>
+              <tr>
+                <th scope="col">Reference</th>
+                <th scope="col">Flight</th>
+                <th scope="col">Travel date</th>
+                <th scope="col">Passengers</th>
+                <th scope="col">Total</th>
+                <th scope="col">Status</th>
+                <th scope="col">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="recordsBody"></tbody>
+          </table>
+        </div>
+        <div class="empty-state" id="recordsEmpty" hidden>
+          <h2 id="recordsEmptyTitle">No bookings yet</h2>
+          <p id="recordsEmptyText">Book a ticket to see it here.</p>
+          <a class="btn btn--primary" id="recordsEmptyLink" href="#book">Book a ticket</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== ABOUT / HELP ===== -->
+    <section class="view" id="view-about" data-view="about" aria-labelledby="aboutHeading" hidden>
+      <div class="container narrow">
+        <h1 id="aboutHeading" tabindex="-1">About / Help</h1>
+        <div class="card">
+          <h2>About this system</h2>
+          <p>Calvin Airlines Inc. is a front-end prototype of a flight ticketing system. It lets passengers choose a flight, select seats from a seat map, see the total cost and receive a ticket confirmation with a reference number. It is built with HTML, CSS and JavaScript only; bookings are stored in your browser using localStorage.</p>
+        </div>
+        <div class="card">
+          <h2>How to use it</h2>
+          <ol class="help-list">
+            <li><strong>Browse flights:</strong> open <a href="#flights">Flights</a>, set your travel date and filter by route. Press <em>Select flight</em>.</li>
+            <li><strong>Book a ticket:</strong> on <a href="#book">Book a Ticket</a>, confirm the flight and date, set the number of passengers, tap that many seats, then fill in the names and contact details.</li>
+            <li><strong>Confirm:</strong> choose a simulated payment method, tick the demonstration notice and press <em>Confirm booking</em>. Your e-ticket with its reference number appears.</li>
+            <li><strong>Manage:</strong> in <a href="#records">My Bookings</a> you can search, view a ticket, edit contact/passenger details or status, cancel (seats are released) or delete a booking.</li>
+          </ol>
+        </div>
+        <div class="card">
+          <h2>Good to know</h2>
+          <ul class="help-list">
+            <li>Prices are in Philippine pesos (₱). Total = seat fares + 12% VAT + ₱150 booking fee per ticket. Business seats (rows 1–3) cost twice the base fare.</li>
+            <li>Seats already reserved in your saved bookings cannot be selected again. Cancelling a booking releases its seats.</li>
+            <li>Travel dates in the past, and flights that already departed today, cannot be booked.</li>
+            <li>Simulated features: payments, seat availability (based only on this browser's records) and email/SMS notifications.</li>
+            <li>Clearing your browser data removes saved bookings. Use <em>Export JSON</em> in My Bookings to keep a backup.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h2>Credits</h2>
+          <p>All content, the logo and the plane artwork were created for this project. Fonts are the system fonts of your device. Airport names are used only as sample data; flights, passengers and fares are fictional.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>&copy; <span id="year">2026</span> Calvin Airlines Inc. Student project prototype. Not a real airline.</p>
+    </div>
+  </footer>
+
+  <!-- ===== Confirm dialog ===== -->
+  <dialog id="confirmDialog" aria-labelledby="confirmTitle" aria-describedby="confirmMessage">
+    <div class="dialog-body">
+      <h2 id="confirmTitle">Are you sure?</h2>
+      <p id="confirmMessage"></p>
+    </div>
+    <div class="dialog-actions">
+      <button class="btn btn--outline" type="button" id="confirmCancel">Keep it</button>
+      <button class="btn btn--primary" type="button" id="confirmOk">Confirm</button>
+    </div>
+  </dialog>
+
+  <!-- ===== Edit dialog ===== -->
+  <dialog id="editDialog" aria-labelledby="editTitle">
+    <form id="editForm" novalidate>
+      <div class="dialog-body">
+        <h2 id="editTitle">Edit booking</h2>
+        <p class="muted" id="editSummary"></p>
+        <div class="form-grid">
+          <div class="field">
+            <label for="editName">Contact person <span class="req" aria-hidden="true">*</span></label>
+            <input type="text" id="editName" maxlength="60" autocomplete="off" required aria-describedby="editName-error">
+            <p class="field-error" id="editName-error" aria-live="polite"></p>
+          </div>
+          <div class="field">
+            <label for="editEmail">Email address <span class="req" aria-hidden="true">*</span></label>
+            <input type="email" id="editEmail" maxlength="80" autocomplete="off" required aria-describedby="editEmail-error">
+            <p class="field-error" id="editEmail-error" aria-live="polite"></p>
+          </div>
+          <div class="field">
+            <label for="editPhone">Mobile number <span class="req" aria-hidden="true">*</span></label>
+            <input type="tel" id="editPhone" maxlength="20" autocomplete="off" required aria-describedby="editPhone-error">
+            <p class="field-error" id="editPhone-error" aria-live="polite"></p>
+          </div>
+          <div class="field">
+            <label for="editStatus">Status</label>
+            <select id="editStatus">
+              <option>Confirmed</option>
+              <option>Checked-In</option>
+              <option>Completed</option>
+            </select>
+          </div>
+        </div>
+        <div class="pax-fields" id="editPaxFields"></div>
+      </div>
+      <div class="dialog-actions">
+        <button class="btn btn--outline" type="button" id="editCancel">Discard changes</button>
+        <button class="btn btn--primary" type="submit">Save changes</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- ===== Toast messages ===== -->
+  <div class="toast-region" id="toastRegion" role="status" aria-live="polite" aria-atomic="false"></div>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
